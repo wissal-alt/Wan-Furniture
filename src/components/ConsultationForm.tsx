@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Sparkles, Heart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export function ConsultationForm() {
+export const ConsultationForm = memo(function ConsultationForm() {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -14,7 +14,7 @@ export function ConsultationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -22,14 +22,15 @@ export function ConsultationForm() {
 
     setSubmitted(true);
     setIsSubmitting(false);
-  };
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
 
   return (
     <section id="consultation" className="py-20 relative overflow-hidden" style={{ background: 'var(--bg)' }}>
@@ -208,4 +209,4 @@ export function ConsultationForm() {
       `}</style>
     </section>
   );
-}
+});

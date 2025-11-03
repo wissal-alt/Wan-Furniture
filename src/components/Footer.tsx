@@ -1,7 +1,8 @@
 import { Mail, MessageCircle, Instagram, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { memo } from 'react';
 
-export function Footer() {
+export const Footer = memo(function Footer() {
   const { t } = useLanguage();
 
   return (
@@ -133,4 +134,4 @@ export function Footer() {
       `}</style>
     </footer>
   );
-}
+});

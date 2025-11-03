@@ -1,7 +1,8 @@
 import { X, Eye } from 'lucide-react';
 import { Product } from '@/lib/csvLoader';
-import { useState } from 'react';
-import { ProductModal } from './ProductModal';
+import { useState, useCallback, memo, lazy, Suspense } from 'react';
+
+const ProductModal = lazy(() => import('./ProductModal').then(m => ({ default: m.ProductModal })));
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -11,13 +12,13 @@ interface CategoryModalProps {
   allProducts: Product[];
 }
 
-export function CategoryModal({ isOpen, onClose, categoryName, products, allProducts }: CategoryModalProps) {
+export const CategoryModal = memo(function CategoryModal({ isOpen, onClose, categoryName, products, allProducts }: CategoryModalProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({});
 
   if (!isOpen) return null;
 
-  const convertPrice = (priceStr: string): { rp: string; usd: string } => {
+  const convertPrice = useCallback((priceStr: string): { rp: string; usd: string } => {
     const cleanPrice = priceStr.replace(/[^\d]/g, '');
     const rpAmount = parseInt(cleanPrice) || 0;
     const usdAmount = Math.round(rpAmount / 16666);
@@ -25,12 +26,20 @@ export function CategoryModal({ isOpen, onClose, categoryName, products, allProd
       rp: `Rp${rpAmount.toLocaleString('id-ID')}`,
       usd: `$${usdAmount}`
     };
-  };
+  }, []);
 
-  const getProductImages = (product: Product): string[] => {
+  const getProductImages = useCallback((product: Product): string[] => {
     const images = [product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl];
     return images;
-  };
+  }, []);
+
+  const handleProductClick = useCallback((product: Product) => {
+    setSelectedProduct(product);
+  }, []);
+
+  const handleCloseProductModal = useCallback(() => {
+    setSelectedProduct(null);
+  }, []);
 
   return (
     <>
@@ -79,6 +88,8 @@ export function CategoryModal({ isOpen, onClose, categoryName, products, allProd
                         src={images[currentIndex]}
                         alt={product.name}
                         className="w-full h-full object-cover absolute inset-0"
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -129,7 +140,7 @@ export function CategoryModal({ isOpen, onClose, categoryName, products, allProd
                     </div>
 
                     <button
-                      onClick={() => setSelectedProduct(product)}
+                      onClick={() => handleProductClick(product)}
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 group"
                       style={{ fontFamily: "'Lexend', sans-serif" }}
                     >
@@ -145,13 +156,15 @@ export function CategoryModal({ isOpen, onClose, categoryName, products, allProd
       </div>
 
       {selectedProduct && (
-        <ProductModal
-          product={selectedProduct}
-          isOpen={!!selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          allProducts={allProducts}
-        />
+        <Suspense fallback={null}>
+          <ProductModal
+            product={selectedProduct}
+            isOpen={!!selectedProduct}
+            onClose={handleCloseProductModal}
+            allProducts={allProducts}
+          />
+        </Suspense>
       )}
     </>
   );
-}
+});

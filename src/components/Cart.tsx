@@ -1,8 +1,8 @@
 import { X, ShoppingCart, Plus, Minus, Trash2, ExternalLink, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 
-export function Cart() {
+export const Cart = memo(function Cart() {
   const { cartItems, removeFromCart, updateQuantity, isCartOpen, closeCart, cartCount } = useCart();
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showProgressPanel, setShowProgressPanel] = useState(false);
@@ -11,22 +11,22 @@ export function Cart() {
   const popupRef = useRef<Window | null>(null);
   const checkIntervalRef = useRef<number | null>(null);
 
-  const getTotalPrice = () => {
+  const getTotalPrice = useMemo(() => {
     return cartItems.reduce((total, item) => {
       const priceStr = item.price.replace(/[^\d]/g, '');
       const price = parseInt(priceStr) || 0;
       return total + price * item.quantity;
     }, 0);
-  };
+  }, [cartItems]);
 
-  const formatPrice = (price: number) => {
+  const formatPrice = useCallback((price: number) => {
     return `Rp${price.toLocaleString('id-ID')}`;
-  };
+  }, []);
 
-  const handleCompleteOrder = () => {
+  const handleCompleteOrder = useCallback(() => {
     if (cartItems.length === 0) return;
     setShowCheckoutModal(true);
-  };
+  }, [cartItems.length]);
 
   useEffect(() => {
     return () => {
@@ -36,7 +36,7 @@ export function Cart() {
     };
   }, []);
 
-  const openTokopediaPopup = (url: string) => {
+  const openTokopediaPopup = useCallback((url: string) => {
     const popupWidth = Math.floor(window.screen.width * 0.55);
     const popupHeight = window.screen.height;
     const popupLeft = 0;
@@ -55,9 +55,9 @@ export function Cart() {
     }
 
     return popup;
-  };
+  }, []);
 
-  const startPopupMonitoring = () => {
+  const startPopupMonitoring = useCallback(() => {
     if (checkIntervalRef.current) {
       clearInterval(checkIntervalRef.current);
     }
@@ -69,9 +69,9 @@ export function Cart() {
         setShowRetryModal(true);
       }
     }, 500);
-  };
+  }, []);
 
-  const proceedToCheckout = () => {
+  const proceedToCheckout = useCallback(() => {
     setShowCheckoutModal(false);
 
     const firstItem = cartItems[0];
@@ -90,9 +90,9 @@ export function Cart() {
     if (popup) {
       startPopupMonitoring();
     }
-  };
+  }, [cartItems, openTokopediaPopup, startPopupMonitoring]);
 
-  const handleNextProduct = () => {
+  const handleNextProduct = useCallback(() => {
     const nextIndex = currentProductIndex + 1;
 
     if (nextIndex >= cartItems.length) {
@@ -122,9 +122,9 @@ export function Cart() {
     }
 
     setCurrentProductIndex(nextIndex);
-  };
+  }, [cartItems, currentProductIndex, openTokopediaPopup, startPopupMonitoring]);
 
-  const handleFinish = () => {
+  const handleFinish = useCallback(() => {
     setShowProgressPanel(false);
     setCurrentProductIndex(0);
     if (checkIntervalRef.current) {
@@ -135,9 +135,9 @@ export function Cart() {
       popupRef.current.close();
     }
     popupRef.current = null;
-  };
+  }, []);
 
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     setShowRetryModal(false);
     const currentItem = cartItems[currentProductIndex];
     const url = currentItem.url && currentItem.url.trim() !== '' ? currentItem.url.trim() : '';
@@ -149,12 +149,12 @@ export function Cart() {
         startPopupMonitoring();
       }
     }
-  };
+  }, [cartItems, currentProductIndex, openTokopediaPopup, startPopupMonitoring]);
 
-  const handleCancelRetry = () => {
+  const handleCancelRetry = useCallback(() => {
     setShowRetryModal(false);
     handleFinish();
-  };
+  }, [handleFinish]);
 
   if (!isCartOpen) return null;
 
@@ -269,7 +269,7 @@ export function Cart() {
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Total</span>
                   <span className="text-2xl font-bold text-amber-700">
-                    {formatPrice(getTotalPrice())}
+                    {formatPrice(getTotalPrice)}
                   </span>
                 </div>
                 <button
@@ -431,4 +431,4 @@ export function Cart() {
       )}
     </>
   );
-}
+});

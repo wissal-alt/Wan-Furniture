@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback, memo, lazy, Suspense } from 'react';
 import { Product } from '@/lib/csvLoader';
 import { Eye } from 'lucide-react';
-import { CategoryModal } from './CategoryModal';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const CategoryModal = lazy(() => import('./CategoryModal').then(m => ({ default: m.CategoryModal })));
 
 interface CollectionsProps {
   products: Product[];
 }
 
-export function Collections({ products }: CollectionsProps) {
+export const Collections = memo(function Collections({ products }: CollectionsProps) {
   const { t, language } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -45,6 +46,14 @@ export function Collections({ products }: CollectionsProps) {
     return collections.find(c => c.name === selectedCategory)?.products || [];
   }, [selectedCategory, collections]);
 
+  const handleCategoryClick = useCallback((categoryName: string) => {
+    setSelectedCategory(categoryName);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedCategory(null);
+  }, []);
+
   return (
     <>
       <section id="collections" className="py-20" style={{ background: 'var(--bg)' }}>
@@ -64,7 +73,7 @@ export function Collections({ products }: CollectionsProps) {
                 key={index}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
-                onClick={() => setSelectedCategory(collection.name)}
+                onClick={() => handleCategoryClick(collection.name)}
                 className="group perspective-1000 cursor-pointer coin-wrapper"
                 style={{ perspective: '1000px' }}
               >
@@ -88,6 +97,8 @@ export function Collections({ products }: CollectionsProps) {
                           src={collection.mainImage}
                           alt={collection.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -141,13 +152,17 @@ export function Collections({ products }: CollectionsProps) {
         </div>
       </section>
 
-      <CategoryModal
-        isOpen={!!selectedCategory}
-        onClose={() => setSelectedCategory(null)}
-        categoryName={selectedCategory || ''}
-        products={selectedCategoryProducts}
-        allProducts={products}
-      />
+      {selectedCategory && (
+        <Suspense fallback={null}>
+          <CategoryModal
+            isOpen={!!selectedCategory}
+            onClose={handleCloseModal}
+            categoryName={selectedCategory}
+            products={selectedCategoryProducts}
+            allProducts={products}
+          />
+        </Suspense>
+      )}
 
       <style>{`
         .preserve-3d {
@@ -229,4 +244,4 @@ export function Collections({ products }: CollectionsProps) {
       `}</style>
     </>
   );
-}
+});

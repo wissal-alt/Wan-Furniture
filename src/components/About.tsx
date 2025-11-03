@@ -1,7 +1,8 @@
 import { Hammer, Sparkles, Award } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { memo } from 'react';
 
-export function About() {
+export const About = memo(function About() {
   const { t } = useLanguage();
 
   return (
@@ -72,4 +73,4 @@ export function About() {
       </div>
     </section>
   );
-}
+});

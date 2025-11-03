@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, memo, lazy, Suspense } from 'react';
 import { Product } from '@/lib/csvLoader';
-import { ProductModal } from './ProductModal';
 import { ChevronLeft, ChevronRight, Eye, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const ProductModal = lazy(() => import('./ProductModal').then(m => ({ default: m.ProductModal })));
 
 interface ProductGridProps {
   products: Product[];
@@ -22,7 +23,7 @@ function convertPrice(priceStr: string): { rp: string; usd: string } {
 
 const PRODUCTS_PER_PAGE = 12;
 
-export function ProductGrid({ products }: ProductGridProps) {
+export const ProductGrid = memo(function ProductGrid({ products }: ProductGridProps) {
   const { t, language } = useLanguage();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,18 +62,30 @@ export function ProductGrid({ products }: ProductGridProps) {
     return filteredProducts.slice(startIndex, endIndex);
   }, [filteredProducts, currentPage]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     const element = document.getElementById('products');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
+  }, []);
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
     setCurrentPage(1);
-  };
+  }, []);
+
+  const handleAddToCart = useCallback((product: Product) => {
+    addToCart(product);
+  }, [addToCart]);
+
+  const handleViewProduct = useCallback((product: Product) => {
+    setSelectedProduct(product);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedProduct(null);
+  }, []);
 
   return (
     <>
@@ -126,6 +139,8 @@ export function ProductGrid({ products }: ProductGridProps) {
                         src={product.imageUrl}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -169,7 +184,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                     <div className="flex flex-col gap-3">
                       <button
                         className="w-full bg-amber-900 hover:bg-amber-950 text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(120,53,15,0.5)] flex items-center justify-center gap-2 group/btn"
-                        onClick={() => setSelectedProduct(product)}
+                        onClick={() => handleViewProduct(product)}
                       >
                         <Eye className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                         <span className="subtitle">{t('products.viewDetails')}</span>
@@ -178,7 +193,7 @@ export function ProductGrid({ products }: ProductGridProps) {
                       <button
                         className="w-full border-2 border-amber-600 text-amber-700 px-4 py-2.5 rounded-lg font-medium transition-all duration-300 hover:shadow-[0_0_20px_rgba(217,119,6,0.5)] flex items-center justify-center gap-2 group/btn"
                         style={{ background: 'var(--surface)' }}
-                        onClick={() => addToCart(product)}
+                        onClick={() => handleAddToCart(product)}
                       >
                         <ShoppingCart className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                         <span className="subtitle">{t('products.addToCart')}</span>
@@ -230,13 +245,15 @@ export function ProductGrid({ products }: ProductGridProps) {
       </section>
 
       {selectedProduct && (
-        <ProductModal
-          product={selectedProduct}
-          isOpen={!!selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          allProducts={products}
-        />
+        <Suspense fallback={null}>
+          <ProductModal
+            product={selectedProduct}
+            isOpen={!!selectedProduct}
+            onClose={handleCloseModal}
+            allProducts={products}
+          />
+        </Suspense>
       )}
     </>
   );
-}
+});

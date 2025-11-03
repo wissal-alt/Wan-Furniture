@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export function FAQ() {
+export const FAQ = memo(function FAQ() {
   const { t } = useLanguage();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const toggleFAQ = useCallback((index: number) => {
+    setOpenIndex(prev => prev === index ? null : index);
+  }, []);
 
   const faqKeys = ['faq.q1', 'faq.q2', 'faq.q3', 'faq.q4', 'faq.q5', 'faq.q6'];
   const answerKeys = ['faq.a1', 'faq.a2', 'faq.a3', 'faq.a4', 'faq.a5', 'faq.a6'];
@@ -60,4 +60,4 @@ export function FAQ() {
       </div>
     </section>
   );
-}
+});

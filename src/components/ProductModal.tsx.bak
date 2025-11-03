@@ -1,6 +1,6 @@
 import { Product } from '@/lib/csvLoader';
 import { X, ShoppingCart, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState, useCallback, useMemo, memo } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 
 interface ProductModalProps {
@@ -10,7 +10,7 @@ interface ProductModalProps {
   allProducts: Product[];
 }
 
-export const ProductModal = memo(function ProductModal({ product, isOpen, onClose, allProducts }: ProductModalProps) {
+export function ProductModal({ product, isOpen, onClose, allProducts }: ProductModalProps) {
   const { addToCart, openCart } = useCart();
   const [showAddedFeedback, setShowAddedFeedback] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -18,25 +18,18 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
   const [showArrows, setShowArrows] = useState(true);
   const [relatedProductsScrollPosition, setRelatedProductsScrollPosition] = useState(0);
 
-  const imagePlaceholders = useMemo(() => [
+  const imagePlaceholders = [
     currentProduct.imageUrl || '',
     currentProduct.imageUrl || '',
     currentProduct.imageUrl || '',
     currentProduct.imageUrl || '',
     currentProduct.imageUrl || '',
-  ], [currentProduct.imageUrl]);
+  ];
 
-  const currentIndex = useMemo(() =>
-    allProducts.findIndex(p => p.id === currentProduct.id),
-    [allProducts, currentProduct.id]
-  );
-
-  const relatedProducts = useMemo(() =>
-    allProducts
-      .filter(p => p.category === currentProduct.category && p.id !== currentProduct.id)
-      .slice(0, 6),
-    [allProducts, currentProduct.category, currentProduct.id]
-  );
+  const currentIndex = allProducts.findIndex(p => p.id === currentProduct.id);
+  const relatedProducts = allProducts
+    .filter(p => p.category === currentProduct.category && p.id !== currentProduct.id)
+    .slice(0, 6);
 
   useEffect(() => {
     setCurrentProduct(product);
@@ -70,23 +63,23 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
       }
     };
 
-    modalContent.addEventListener('scroll', handleScroll, { passive: true });
+    modalContent.addEventListener('scroll', handleScroll);
     return () => modalContent.removeEventListener('scroll', handleScroll);
   }, [isOpen, currentProduct]);
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = () => {
     addToCart(currentProduct);
     setShowAddedFeedback(true);
     setTimeout(() => setShowAddedFeedback(false), 2000);
-  }, [addToCart, currentProduct]);
+  };
 
-  const handleBuyNow = useCallback(() => {
+  const handleBuyNow = () => {
     addToCart(currentProduct);
     onClose();
     openCart();
-  }, [addToCart, currentProduct, onClose, openCart]);
+  };
 
-  const handlePrevProduct = useCallback((e: React.MouseEvent) => {
+  const handlePrevProduct = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (currentIndex > 0) {
       const newProduct = allProducts[currentIndex - 1];
@@ -98,9 +91,9 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
         modalContent.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
-  }, [currentIndex, allProducts]);
+  };
 
-  const handleNextProduct = useCallback((e: React.MouseEvent) => {
+  const handleNextProduct = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (currentIndex < allProducts.length - 1) {
       const newProduct = allProducts[currentIndex + 1];
@@ -112,9 +105,26 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
         modalContent.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
-  }, [currentIndex, allProducts]);
+  };
 
-  const scrollRelatedProducts = useCallback((direction: 'left' | 'right') => {
+  const convertPrice = (priceStr: string): { rp: string; usd: string } => {
+    const cleanPrice = priceStr.replace(/[^\d]/g, '');
+    const rpAmount = parseInt(cleanPrice) || 0;
+    const usdAmount = Math.round(rpAmount / 16666);
+    return {
+      rp: `Rp${rpAmount.toLocaleString('id-ID')}`,
+      usd: `$${usdAmount}`
+    };
+  };
+
+  const cleanDescription = (desc: string): string => {
+    return desc
+      .replace(/\*\*/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
+
+  const scrollRelatedProducts = (direction: 'left' | 'right') => {
     const container = document.getElementById('related-products-container');
     if (!container) return;
 
@@ -125,24 +135,7 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
 
     container.scrollTo({ left: newPosition, behavior: 'smooth' });
     setRelatedProductsScrollPosition(newPosition);
-  }, [relatedProductsScrollPosition]);
-
-  const convertPrice = useCallback((priceStr: string): { rp: string; usd: string } => {
-    const cleanPrice = priceStr.replace(/[^\d]/g, '');
-    const rpAmount = parseInt(cleanPrice) || 0;
-    const usdAmount = Math.round(rpAmount / 16666);
-    return {
-      rp: `Rp${rpAmount.toLocaleString('id-ID')}`,
-      usd: `$${usdAmount}`
-    };
-  }, []);
-
-  const cleanDescription = useCallback((desc: string): string => {
-    return desc
-      .replace(/\*\*/g, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-  }, []);
+  };
 
   if (!isOpen) return null;
 
@@ -151,7 +144,7 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
-      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', willChange: 'opacity' }}
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div className="relative flex items-center justify-center w-full h-full">
@@ -161,7 +154,7 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
             className={`absolute left-2 lg:left-8 z-20 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 group ${
               showArrows ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
-            style={{ background: 'var(--surface)', willChange: 'transform, opacity' }}
+            style={{ background: 'var(--surface)' }}
           >
             <ChevronLeft className="w-6 h-6 text-amber-900 dark:text-amber-400 group-hover:scale-125 transition-transform" />
           </button>
@@ -170,7 +163,7 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
         <div
           id="modal-content"
           className="modal rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300 relative"
-          style={{ background: 'var(--surface)', color: 'var(--text)', willChange: 'transform' }}
+          style={{ background: 'var(--surface)', color: 'var(--text)' }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="sticky top-0 backdrop-blur-sm border-b p-4 flex justify-between items-center z-10" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
@@ -192,8 +185,6 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
                       src={imagePlaceholders[selectedImageIndex]}
                       alt={currentProduct.name}
                       className="w-full h-full object-cover absolute inset-0"
-                      loading="eager"
-                      decoding="async"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
@@ -222,8 +213,6 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
                           src={img}
                           alt={`${currentProduct.name} ${index + 1}`}
                           className="w-full h-full object-cover absolute inset-0"
-                          loading="lazy"
-                          decoding="async"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -362,8 +351,6 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
                                 src={relatedProduct.imageUrl}
                                 alt={relatedProduct.name}
                                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                loading="lazy"
-                                decoding="async"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';
@@ -401,7 +388,7 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
             className={`absolute right-2 lg:right-8 z-20 p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-110 group ${
               showArrows ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
-            style={{ background: 'var(--surface)', willChange: 'transform, opacity' }}
+            style={{ background: 'var(--surface)' }}
           >
             <ChevronRight className="w-6 h-6 text-amber-900 dark:text-amber-400 group-hover:scale-125 transition-transform" />
           </button>
@@ -409,4 +396,4 @@ export const ProductModal = memo(function ProductModal({ product, isOpen, onClos
       </div>
     </div>
   );
-});
+}

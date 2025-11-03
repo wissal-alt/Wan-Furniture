@@ -12,4 +12,21 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-slot'
+          ],
+        },
+      },
+    },
+    cssCodeSplit: true,
+    minify: 'esbuild',
+  },
 });
