@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Lexend:wght@100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --bg: #ffffff;
+  --surface: #fffdfa;
+  --muted-surface: #f7f5f3;
+  --text: #111827;
+  --muted-text: #6b7280;
+  --accent: #B88634;
+  --glow: rgba(165,129,85,0.08);
+  --border: rgba(17,24,39,0.06);
+
+  font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark {
+  --bg: #111828;
+  --surface: #111828;
+  --muted-surface: #1a202e;
+  --text: #e8e8e8;
+  --muted-text: #aeb3b6;
+  --accent: #b98b4d;
+  --glow: rgba(80,60,40,0.06);
+  --border: rgba(255,255,255,0.04);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background .22s, color .22s;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.section-surface, .card, .modal, .dropdown, .popover, .popup {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.muted {
+  color: var(--muted-text) !important;
+}
+
+.accent {
+  color: var(--accent) !important;
+}
+
+.border-soft {
+  border-color: var(--border) !important;
+}
+
+.glow {
+  box-shadow: 0 8px 30px var(--glow);
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.button-ghost {
+  border-color: var(--border);
+  color: var(--text);
+  background: transparent;
+}
+
+#modal-root .modal, .portal .modal {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+#modal-root .modal .title {
+  color: var(--text) !important;
+}
+
+nav {
+  background: var(--surface) !important;
+}
+
+html.dark nav {
+  background: rgba(17, 24, 40, 0.8) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'DM Serif Text', serif;
+  line-height: 1.2;
+}
+
+.subtitle, .subtext {
+  font-family: 'Newsreader', serif;
+  line-height: 1.5;
+}
+
+a {
+  font-weight: 500;
+  color: #c49b4f;
+  text-decoration: inherit;
+  transition: color 0.3s ease;
+}
+a:hover {
+  color: #a67c37;
+}
+
+button {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: 'Lexend', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+    --card: 40 40% 99%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 40 45% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 30% 95%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 40 20% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 42 78% 65%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 40 45% 54%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 217 33% 10%;
+    --foreground: 40 20% 95%;
+    --card: 217 33% 10%;
+    --card-foreground: 40 20% 95%;
+    --popover: 217 33% 10%;
+    --popover-foreground: 40 20% 95%;
+    --primary: 40 45% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 25% 13%;
+    --secondary-foreground: 40 20% 95%;
+    --muted: 217 25% 13%;
+    --muted-foreground: 40 15% 65%;
+    --accent: 42 70% 55%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 20% 20%;
+    --input: 217 20% 20%;
+    --ring: 40 45% 54%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+#related-products-container::-webkit-scrollbar {
+  display: none;
+}
+
+#related-products-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#related-products-container img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: inherit;
+  transform: none !important;
+  transition: none !important;
+}
