@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import wanLogo from "../assets/1761168066890.png";
+import ColorBends from '@/components/ui/color-bends';
 
 declare global {
   namespace JSX {
@@ -28,6 +29,21 @@ export function Hero() {
 
   return (
     <section id="home" className="relative pt-24 pb-24 md:pt-32 md:pb-32 overflow-hidden" style={{ background: 'var(--bg)' }}>
+      <div className="absolute inset-0 w-full h-full">
+        <ColorBends
+          colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
+          rotation={30}
+          speed={0.3}
+          scale={1.2}
+          frequency={1.4}
+          warpStrength={1.2}
+          mouseInfluence={0.8}
+          parallax={0.6}
+          noise={0.08}
+          transparent
+        />
+      </div>
+
       <div className="absolute inset-0 w-full h-full">
         <spline-viewer url="https://prod.spline.design/QkkiBgZpsBCWm3Nk/scene.splinecode" className="w-full h-full"></spline-viewer>
       </div>
